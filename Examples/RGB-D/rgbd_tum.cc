@@ -35,7 +35,7 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
-    if(argc != 7)
+    if(argc != 8)
     {
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
@@ -44,8 +44,8 @@ int main(int argc, char **argv)
     bool disableViewer = false;
     ORB_SLAM2::disableLoopAndReloc = false;
 
-    disableViewer = bool(atoi(argv[5]));
-    ORB_SLAM2::disableLoopAndReloc = bool(atoi(argv[6]));
+    disableViewer = bool(atoi(argv[6]));
+    ORB_SLAM2::disableLoopAndReloc = bool(atoi(argv[7]));
 
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 
     // Save camera trajectory
     SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[4]));
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[5]));
 
     return 0;
 }
