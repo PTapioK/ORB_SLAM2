@@ -19,6 +19,7 @@
 */
 
 
+#include "System.h"
 #include "Tracking.h"
 
 #include<opencv2/core/core.hpp>
@@ -916,7 +917,7 @@ bool Tracking::TrackWithMotionModel()
             else if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
                 nmatchesMap++;
         }
-    }    
+    }
 
     if(mbOnlyTracking)
     {
@@ -1340,6 +1341,7 @@ void Tracking::UpdateLocalKeyFrames()
 
 bool Tracking::Relocalization()
 {
+    if (disableLoopAndReloc) return false;
     // Compute Bag of Words Vector
     mCurrentFrame.ComputeBoW();
 

@@ -36,11 +36,17 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
 
 int main(int argc, char **argv)
 {
-    if(argc != 6)
+    if(argc != 8)
     {
         cerr << endl << "Usage: ./stereo_euroc path_to_vocabulary path_to_settings path_to_left_folder path_to_right_folder path_to_times_file" << endl;
         return 1;
     }
+
+    bool disableViewer = false;
+    ORB_SLAM2::disableLoopAndReloc = false;
+
+    disableViewer = bool(atoi(argv[6]));
+    ORB_SLAM2::disableLoopAndReloc = bool(atoi(argv[7]));
 
     // Retrieve paths to images
     vector<string> vstrImageLeft;
@@ -101,7 +107,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,!disableViewer);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;

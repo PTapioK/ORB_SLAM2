@@ -42,6 +42,8 @@
 namespace ORB_SLAM2
 {
 
+extern bool disableLoopAndReloc;
+
 class Viewer;
 class FrameDrawer;
 class Map;

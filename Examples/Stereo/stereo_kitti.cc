@@ -36,11 +36,17 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
 
 int main(int argc, char **argv)
 {
-    if(argc != 4)
+    if(argc != 6)
     {
         cerr << endl << "Usage: ./stereo_kitti path_to_vocabulary path_to_settings path_to_sequence" << endl;
         return 1;
     }
+
+    bool disableViewer = false;
+    ORB_SLAM2::disableLoopAndReloc = false;
+
+    disableViewer = bool(atoi(argv[4]));
+    ORB_SLAM2::disableLoopAndReloc = bool(atoi(argv[5]));
 
     // Retrieve paths to images
     vector<string> vstrImageLeft;
@@ -51,7 +57,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,!disableViewer);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -59,7 +65,7 @@ int main(int argc, char **argv)
 
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
-    cout << "Images in the sequence: " << nImages << endl << endl;   
+    cout << "Images in the sequence: " << nImages << endl << endl;
 
     // Main loop
     cv::Mat imLeft, imRight;
