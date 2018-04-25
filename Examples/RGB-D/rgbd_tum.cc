@@ -72,7 +72,9 @@ int main(int argc, char **argv)
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
+    vector<float> vLoadTimes;
     vTimesTrack.resize(nImages);
+    vLoadTimes.resize(nImages);
 
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
@@ -80,11 +82,31 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat imRGB, imD;
+
+#ifdef COMPILEDWITHC11
+    std::chrono::steady_clock::time_point tstart = std::chrono::steady_clock::now();
+#else
+    std::chrono::monotonic_clock::time_point tstart = std::chrono::monotonic_clock::now();
+#endif
     for(int ni=0; ni<nImages; ni++)
     {
+#ifdef COMPILEDWITHC11
+    std::chrono::steady_clock::time_point tl1 = std::chrono::steady_clock::now();
+#else
+    std::chrono::monotonic_clock::time_point tl1 = std::chrono::monotonic_clock::now();
+#endif
         // Read image and depthmap from file
         imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],CV_LOAD_IMAGE_UNCHANGED);
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],CV_LOAD_IMAGE_UNCHANGED);
+#ifdef COMPILEDWITHC11
+    std::chrono::steady_clock::time_point tl2 = std::chrono::steady_clock::now();
+#else
+    std::chrono::monotonic_clock::time_point tl2 = std::chrono::monotonic_clock::now();
+#endif
+        double tload = std::chrono::duration_cast<std::chrono::duration<double> >(tl2 - tl1).count();
+
+        vLoadTimes[ni] = tload;
+
         double tframe = vTimestamps[ni];
 
         if(imRGB.empty())
@@ -123,7 +145,11 @@ int main(int argc, char **argv)
         if(ttrack<T)
             usleep((T-ttrack)*1e6);
     }
-
+#ifdef COMPILEDWITHC11
+    std::chrono::steady_clock::time_point tend = std::chrono::steady_clock::now();
+#else
+    std::chrono::monotonic_clock::time_point tend = std::chrono::monotonic_clock::now();
+#endif
     // Stop all threads
     SLAM.Shutdown();
 
@@ -134,9 +160,23 @@ int main(int argc, char **argv)
     {
         totaltime+=vTimesTrack[ni];
     }
+    // Load time statistics
+    sort(vLoadTimes.begin(),vLoadTimes.end());
+    float totalloadtime = 0;
+    for(int ni=0; ni<nImages; ni++)
+    {
+        totalloadtime+=vLoadTimes[ni];
+    }
     cout << "-------" << endl << endl;
+    cout << "total tracking time: " << totaltime << endl;
     cout << "median tracking time: " << vTimesTrack[nImages/2] << endl;
     cout << "mean tracking time: " << totaltime/nImages << endl;
+    cout << "max tracking time: " << vTimesTrack[nImages-1] << endl;
+    cout << "loop time: " << (std::chrono::duration_cast<std::chrono::duration<double> >(tend - tstart).count()) << endl;
+    cout << "total image load time: " << totalloadtime << endl;
+    cout << "median image load time: " << vLoadTimes[nImages/2] << endl;
+    cout << "mean image load time: " << totalloadtime/nImages << endl;
+    cout << "max image load time: " << vLoadTimes[nImages-1] << endl;
 
     // Save camera trajectory
     SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
